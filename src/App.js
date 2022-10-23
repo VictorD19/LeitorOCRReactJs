@@ -1,24 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import { InputFile } from "./Components/Input/Index";
+import { Loading } from "./Components/Loading";
+import Tesseract from "tesseract.js";
+import { TextArea } from "./Components/Text";
+import { ErrorAlert } from "./Components/Alert";
+import { Button } from "react-bootstrap";
+import { Body } from "./Components/BodyPage";
 
 function App() {
+  const [imagePath, setImagePath] = useState("");
+  const [text, setText] = useState("");
+  const [progress, setProgress] = useState(0);
+
+  const handleReadImage = () => {
+    Tesseract.recognize(imagePath, "por", {
+      logger: (m) => {
+        if (m.status === "recognizing text") setProgress(m.progress * 100);
+        console.log(m);
+      },
+    })
+      .then(({ data: { text } }) => {
+        setText(text);
+        setProgress(0);
+        setImagePath("");
+      })
+      .catch((error) => ErrorAlert("Não foi possivel processar a imagem!"));
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Body>
+      <h1>Leitor de imagens</h1>
+      {!text && progress === 0 && (
+        <div>
+          <InputFile uploadImage={setImagePath} />
+          <Button
+            variant="primary"
+            onClick={handleReadImage}
+            size="sm"
+            disabled={imagePath ? false : true}
+          >
+            Coverter em texto
+          </Button>
+        </div>
+      )}
+
+      {progress > 0 && progress < 100 && <Loading progress={progress} />}
+      {text && <TextArea text={text} progress={setText} />}
+    </Body>
   );
 }
 
