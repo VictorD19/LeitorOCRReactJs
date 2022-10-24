@@ -2,7 +2,7 @@ import { Button } from "react-bootstrap";
 
 export const TextArea = ({ text, progress }) => {
   return (
-    <div>
+    <div className="AreaText">
       <h2>Texto Extraido</h2>
       <p>{text}</p>
 
